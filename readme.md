@@ -42,6 +42,10 @@
 - [8. Tech Stack](#8-tech-stack)
 - [9. Tagline Ideas](#9-tagline-ideas)
 - [10. Next Steps](#10-next-steps)
+- [11. Repositories \& Setup](#11-repositories--setup)
+  - [การเชื่อมต่อ](#การเชื่อมต่อ)
+  - [สิ่งที่ทำไปแล้วในแต่ละ repo](#สิ่งที่ทำไปแล้วในแต่ละ-repo)
+  - [Tasks — สิ่งที่ต้องทำต่อ (เมื่อมีเครื่องพร้อม)](#tasks--สิ่งที่ต้องทำต่อ-เมื่อมีเครื่องพร้อม)
 
 ---
 
@@ -252,3 +256,44 @@ CLOSED:
 - หรือทำ **MVP roadmap 2–4 สัปดาห์**
 
 บอกได้เลยว่าจะไปทาง **CLI-first**, **Desktop-first**, หรือ **Hybrid**
+
+---
+
+## 11. Repositories & Setup
+
+โปรเจกต์แบ่งเป็น 4 repo (หรือโฟลเดอร์ใน monorepo) ดังนี้:
+
+| Repo                | ภาษา    | หน้าที่                                                                                                             |
+| ------------------- | ------- | ---------------------------------------------------------------------------------------------------------------- |
+| **black-vault**     | —       | เอกสารและ concept (repo นี้)                                                                                       |
+| **black-vault-lib** | Go      | Library สำหรับ logic ที่เรียกใช้บ่อย: config, workspace lifecycle, GitLab client; เก็บ API contract (`.proto`) สำหรับ gRPC |
+| **black-vault-cli** | Go      | CLI (Cobra): คำสั่ง `open`, `close`, `status`, `serve`; ใช้ black-vault-lib; รัน gRPC server ให้ GUI เชื่อมต่อ            |
+| **black-vault-gui** | Flutter | Desktop GUI; เป็น gRPC client ไปที่ `blackvault serve` (localhost:50051)                                            |
+
+### การเชื่อมต่อ
+
+- **CLI ↔ GUI:** ผ่าน gRPC — CLI รัน `blackvault serve` แล้ว GUI connect ไปที่ `localhost:50051`
+- **Proto:** อยู่ที่ `black-vault-lib/api/proto/blackvault.proto` (และ copy ไว้ใน CLI / GUI สำหรับ generate Go และ Dart)
+
+### สิ่งที่ทำไปแล้วในแต่ละ repo
+
+- **black-vault-lib:** Config (YAML), Workspace (open/close/list), **SQLite store** (repos + cache ที่ `~/.blackvault/blackvault.db` สร้างใหม่ถ้าไม่มี), GitLab client (stub), Service (Open/Close/Status/ListRepositories), proto นิยาม BlackVaultService
+- **black-vault-cli:** Cobra + open/close/status/serve, ใช้ lib, proto สำหรับ generate Go (ต้องรัน `make proto` เมื่อมี protoc)
+- **black-vault-gui:** โปรเจกต์ Flutter, หน้าเชื่อม gRPC (placeholder), proto สำหรับ generate Dart (`make proto`)
+
+รายละเอียดและวิธี build/รัน ดูใน **README.md ของแต่ละ repo**
+
+### Tasks — สิ่งที่ต้องทำต่อ (เมื่อมีเครื่องพร้อม)
+
+ทำบนเครื่องที่มี CLI ที่ต้องการ (Go, Flutter, protoc ตามรายการ):
+
+| #   | Repo                | Task                                                                               | หมายเหตุ                                                                   |
+| --- | ------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| 1   | **black-vault-gui** | ติดตั้ง Flutter CLI แล้วรัน `flutter create . --platforms=windows,linux,macos`          | สร้างโฟลเดอร์ `windows/`, `linux/`, `macos/` (ตอนนี้ยังไม่มีในเครื่องที่ไม่มี Flutter) |
+| 2   | black-vault-gui     | รัน `flutter pub get` แล้วทดสอบ `flutter run -d macos` (หรือ windows/linux)           | ให้แอปขึ้นและกด Connect ได้                                                   |
+| 3   | black-vault-cli     | ติดตั้ง protoc + protoc-gen-go, protoc-gen-go-grpc แล้วรัน `make proto`                 | ได้ไฟล์ `.pb.go`, `_grpc.pb.go`                                             |
+| 4   | black-vault-cli     | แก้ `cmd/serve.go` ให้ register BlackVaultService และใช้ generated code แล้ว build ใหม่ | ให้ `blackvault serve` รัน gRPC จริง                                         |
+| 5   | black-vault-gui     | รัน `make proto` (ต้องมี protoc + protoc_plugin)                                      | ได้ Dart client ใน `lib/src/generated/`                                    |
+| 6   | black-vault-gui     | ต่อ UI กับ gRPC client จริง (แทน placeholder)                                         | Connect แล้วเรียก GetStatus / Open / Close ได้                               |
+
+ถ้าเครื่องไหนยังไม่มี Flutter — ไปทำ task 1–2, 5–6 บนเครื่องที่มี Flutter อีกรอบเดียวก็ได้
