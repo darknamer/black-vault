@@ -15,7 +15,9 @@
 **Git BlackVault** คือแอปสำหรับจัดการ Git Repository แบบ **Ephemeral Workspace**
 
 - **เปิดใช้เมื่อจำเป็น** → Clone → ทำงาน → **ปิดแล้วลบทิ้งทั้งหมด**
-- ไม่ sync กับ NAS ไม่เก็บไฟล์ค้าง ไม่ผูก lifecycle กับเครื่อง
+- โหมดหลัก (`type: git`) ไม่ sync กับ NAS ไม่เก็บไฟล์ค้าง ไม่ผูก lifecycle กับเครื่อง
+- รองรับทั้ง **GitLab และ GitHub** (ตั้ง `git_provider`)
+- _(กำลังพัฒนา)_ solution ทดลอง **`type: nas`** สำหรับ sync ไฟล์ขึ้น NAS — เปิดเฉพาะโหมด develop (`BLACKVAULT_DEV=1`)
 
 ---
 
@@ -69,7 +71,7 @@
 
 ## 2. Core Use Case
 
-- ใช้หลาย repo จาก **GitLab**
+- ใช้หลาย repo จาก **GitLab หรือ GitHub**
 - ไม่อยาก clone ค้างไว้ 20–30 repo
 - อยากแยก context งานชัดเจน
 - เครื่องโล่ง / backup ง่าย / ไม่เสี่ยงข้อมูลรั่ว
@@ -143,8 +145,9 @@ status (closed | active)
          ▼
 [ BlackVault Core Service ]
          │
-         ├── Git Provider (GitLab)
+         ├── Git Provider (GitLab / GitHub)
          ├── Workspace Manager
+         ├── NAS Solution (develop) — sync ไฟล์ขึ้น NAS
          └── File System Guard
 ```
 
@@ -154,13 +157,16 @@ status (closed | active)
 
 | Module                | หน้าที่                                                                      |
 | --------------------- | ------------------------------------------------------------------------- |
-| **Git Provider**      | GitLab API, Token auth, Repo / branch / permission check                  |
-| **Workspace Manager** | clone, delete, lock (ป้องกันลบโดยไม่ตั้งใจ), detect dirty state (uncommitted)  |
-| **Safety Guard**      | เตือนเมื่อมี uncommitted changes / unpushed commits, รองรับ optional `--force` |
+| **Git Provider**      | GitLab / GitHub, Token auth, provider-agnostic clone URL (`group/repo`)    |
+| **Workspace Manager** | clone (system/portable git หรือ go-git fallback), delete, list active, SQLite registry |
+| **NAS Solution** *(develop)* | sync ไฟล์ workspace ขึ้น NAS (rsync/ssh/ftp/smb/nfs), `.nasignore`, นโยบายแก้ conflict/ลบ, โหมด manual/interval/watch |
+| **Safety Guard**      | optional `--force` ตอนปิด (detect dirty state เป็น TODO)                     |
 
 ---
 
 ## 5. UX Flow (Desktop / CLI)
+
+> ครั้งแรกตั้งค่าด้วย `blackvault init` (เลือก provider gitlab/github, workspace, ฯลฯ) — flow หลักคือ open / close / status ด้านล่าง ส่วนคำสั่ง Git (commit/branch/merge/git-flow), `config`, `nas` ฯลฯ ดูรายการเต็มใน [README ของ black-vault-cli](../black-vault-cli/README.md)
 
 ### 5.1 Open
 
@@ -208,6 +214,7 @@ CLOSED:
 
 | Feature                   | รายละเอียด                                              |
 | ------------------------- | ------------------------------------------------------ |
+| **NAS Sync Solution** *(เริ่มแล้ว — develop)* | `type: nas` — sync ไฟล์ขึ้น NAS (rsync/ssh/ftp/smb/nfs), `.nasignore`, manual/interval/watch, นโยบายแก้ conflict/ลบ; เหลือ transfer layer จริง |
 | **Workspace Profiles**    | dev / review / hotfix — different clone depth / branch |
 | **Time-based Auto Close** | ปิดอัตโนมัติหลัง idle X ชั่วโมง                               |
 | **Encrypted Temp Vault**  | encrypt workspace folder (LUKS / fscrypt)              |
@@ -220,7 +227,7 @@ CLOSED:
 - ❌ Git GUI
 - ❌ GitHub Desktop clone
 - ❌ Backup tool
-- ❌ NAS sync
+- ❌ NAS sync *(โดยค่าเริ่มต้น `type: git` — มี solution ทดลอง `type: nas` แยกต่างหากในโหมด develop)*
 
 > **Git BlackVault = lifecycle manager ของ repo**
 
@@ -228,14 +235,18 @@ CLOSED:
 
 ## 8. Tech Stack
 
-| Layer   | Option                      |
-| ------- | --------------------------- |
-| Core    | Go / Rust                   |
-| CLI     | Cobra / Clap                |
-| Desktop | Tauri / Electron (optional) |
-| Config  | YAML                        |
-| Auth    | GitLab Token                |
-| OS      | Linux / macOS / Windows     |
+| Layer        | ที่ใช้จริง                                          |
+| ------------ | ------------------------------------------------ |
+| Core / Lib   | Go (`black-vault-lib`)                            |
+| CLI          | Go + Cobra (`spf13/cobra`)                        |
+| Git          | system/portable git, fallback **go-git** (in-process) |
+| Store        | SQLite (`modernc.org/sqlite`, pure-Go, CGO ปิด)   |
+| GUI          | Flutter (desktop)                                |
+| CLI ↔ GUI    | gRPC (proto ใน lib)                              |
+| API backend  | C# / ASP.NET Core (`black-vault-api`) — License   |
+| Config       | YAML (`~/.blackvault/config.yaml`)               |
+| Auth         | GitLab / GitHub Token                            |
+| OS           | Linux / macOS / Windows                          |
 
 ---
 
@@ -261,14 +272,15 @@ CLOSED:
 
 ## 11. Repositories & Setup
 
-โปรเจกต์แบ่งเป็น 4 repo (หรือโฟลเดอร์ใน monorepo) ดังนี้:
+โปรเจกต์แบ่งเป็น 5 repo (หรือโฟลเดอร์ใน monorepo) ดังนี้:
 
-| Repo                | ภาษา    | หน้าที่                                                                                                             |
-| ------------------- | ------- | ---------------------------------------------------------------------------------------------------------------- |
-| **black-vault**     | —       | เอกสารและ concept (repo นี้)                                                                                       |
-| **black-vault-lib** | Go      | Library สำหรับ logic ที่เรียกใช้บ่อย: config, workspace lifecycle, GitLab client; เก็บ API contract (`.proto`) สำหรับ gRPC |
-| **black-vault-cli** | Go      | CLI (Cobra): คำสั่ง `open`, `close`, `status`, `serve`; ใช้ black-vault-lib; รัน gRPC server ให้ GUI เชื่อมต่อ            |
-| **black-vault-gui** | Flutter | Desktop GUI; เป็น gRPC client ไปที่ `blackvault serve` (localhost:50051)                                            |
+| Repo                | ภาษา           | หน้าที่                                                                                                                          |
+| ------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **black-vault**     | —              | เอกสารและ concept (repo นี้)                                                                                                    |
+| **black-vault-lib** | Go             | Library — logic ทั้งหมด: config, workspace lifecycle, clone (provider-agnostic), **SQLite store** (registry + cache), GitLab client, solution NAS; เก็บ API contract (`.proto`) สำหรับ gRPC |
+| **black-vault-cli** | Go             | CLI (Cobra) — ตัวห่อบาง ๆ ของ lib: `init`/`config`, `open`/`close`/`status`, คำสั่ง Git (commit/branch/merge/remote/git-flow), `nas` (develop), `serve` (gRPC ให้ GUI)                |
+| **black-vault-gui** | Flutter        | Desktop GUI; เป็น gRPC client ไปที่ `blackvault serve` (localhost:50051)                                                        |
+| **black-vault-api** | C# / ASP.NET   | Backend แยกต่างหากสำหรับระบบ **License** (Customer / License / LicenseActivation) + environment config (Local/Dev/Staging/Prod) |
 
 ### การเชื่อมต่อ
 
@@ -277,9 +289,10 @@ CLOSED:
 
 ### สิ่งที่ทำไปแล้วในแต่ละ repo
 
-- **black-vault-lib:** Config (YAML), Workspace (open/close/list), **SQLite store** (repos + cache ที่ `~/.blackvault/blackvault.db` สร้างใหม่ถ้าไม่มี), GitLab client (stub), Service (Open/Close/Status/ListRepositories), proto นิยาม BlackVaultService
-- **black-vault-cli:** Cobra + open/close/status/serve, ใช้ lib, proto สำหรับ generate Go (ต้องรัน `make proto` เมื่อมี protoc)
+- **black-vault-lib:** Config (YAML — `type`, `git_provider` gitlab/github, NAS keys), Workspace (open/close/list), provider-agnostic clone (system/portable git + go-git fallback), **SQLite store** (repos + cache ที่ `~/.blackvault/blackvault.db` สร้างใหม่ถ้าไม่มี), GitLab client (stub), **solution NAS** (`internal/nas`: `.nasignore` matcher, plan engine แก้ conflict/ลบ, polling watcher — มี unit test), Service (Open/Close/Status/ListRepositories + accessor ของ config/NAS), proto นิยาม BlackVaultService
+- **black-vault-cli:** Cobra (ตัวห่อบาง ๆ ของ lib) — `init`/`config`, `open`/`close`/`status`, คำสั่ง Git (add/commit/fetch/pull/push, branch, merge, remote, git-flow), `install-git`, `version`, `nas` (develop), `serve`; **command tests** ใน `tests/cmd/`; proto สำหรับ generate Go (`make proto`). _หมายเหตุ:_ build เต็มต้อง checkout `black-vault-lib` เป็น sibling ที่มี `Git*` methods ครบ (เฟส 0 ใน README ของ CLI)
 - **black-vault-gui:** โปรเจกต์ Flutter, หน้าเชื่อม gRPC (placeholder), proto สำหรับ generate Dart (`make proto`)
+- **black-vault-api:** Backend C# / ASP.NET Core — ระบบ License (Customer / License / LicenseActivation), environment config 4 แบบ (Local/Development/Staging/Production) พร้อม `appsettings.{Environment}.json`
 
 รายละเอียดและวิธี build/รัน ดูใน **README.md ของแต่ละ repo**
 
