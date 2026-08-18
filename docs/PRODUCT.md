@@ -408,7 +408,9 @@ cd black-vault-api && dotnet build BlackVault.slnx
 
 | เอกสาร | ที่อยู่ |
 |--------|--------|
-| Concept & MVP features | [readme.md](../readme.md) |
+| Concept & MVP features | [README.md](../README.md) |
+| โครงข้อมูล (ตาราง `repos`) | [DATATABLE.md](DATATABLE.md) |
+| Requirements (build/รันจริง) | [REQUIREMENTS.md](REQUIREMENTS.md) |
 | Lib API & store | [black-vault-lib/README.md](../../black-vault-lib/README.md) |
 | CLI commands | [black-vault-cli/README.md](../../black-vault-cli/README.md) |
 | GUI setup | [black-vault-gui/README.md](../../black-vault-gui/README.md) |
