@@ -13,6 +13,7 @@
 | **30** | `30-reference/` | [cli-capabilities.md](30-reference/cli-capabilities.md) | §13 สิ่งที่ CLI ทำได้ตอนนี้ (verify กับโค้ด) + §13.9 ข้อจำกัดที่รู้ |
 | | | [datatable.md](30-reference/datatable.md) | โครงตาราง `repos` (SQLite) + metadata ต่อโปรไฟล์ |
 | **40** | `40-status/` | [progress.md](40-status/progress.md) | §10 งานที่เหลือ (GAP-1, NAS-1, GH-2/3, IDE-1), สิ่งที่ทำไปแล้วในแต่ละ repo, Tasks ชุดเดิม |
+| **70** | `70-ux/` | [customer-journeys.md](70-ux/customer-journeys.md) | 10 customer journey ของ CLI (ทดสอบจริง + อ้างอิงโค้ด), pain point และลำดับงาน UX ที่แนะนำ |
 
 > หมายเหตุ: เลขหัวข้อ §1–§13 คงตาม README เดิม (ก่อนย่อ) เพื่อให้ anchor/ลิงก์เดิมยังตามหาได้
 

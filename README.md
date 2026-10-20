@@ -85,6 +85,7 @@ blackvault close group/repo           # ปิด workspace — push เอง�
 | 10 | [`10-features/`](docs/10-features/mvp-features.md) | Key Features (MVP), UX flow open/close/status, Phase 2 |
 | 30 | [`30-reference/`](docs/30-reference/cli-capabilities.md) | สิ่งที่ CLI ทำได้ตอนนี้ (verify กับโค้ด), โครงข้อมูล ([datatable.md](docs/30-reference/datatable.md)) |
 | 40 | [`40-status/`](docs/40-status/progress.md) | งานที่เหลือ (Next Steps), สิ่งที่ทำไปแล้วในแต่ละ repo |
+| 70 | [`70-ux/`](docs/70-ux/customer-journeys.md) | customer journey ของผู้ใช้ CLI, pain point และลำดับงาน UX |
 
 ---
 
