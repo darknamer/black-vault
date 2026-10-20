@@ -74,7 +74,7 @@ group-black-vault/
 
 | Repo | บทบาท | ใครเรียกใคร |
 |------|--------|-------------|
-| **black-vault** | Vision, readme, เอกสารผลิตภัณฑ์ (`docs/PRODUCT.md`) | อ้างอิงโดยทุก repo |
+| **black-vault** | Vision, readme, เอกสารผลิตภัณฑ์ (`docs/01-overview/product.md`) | อ้างอิงโดยทุก repo |
 | **black-vault-lib** | `Service`: Open/Close/Status/ListRepositories, config, workspace, store, GitLab client | ถูก import โดย CLI (`replace => ../black-vault-lib`) |
 | **black-vault-cli** | คำสั่ง shell + `serve` (gRPC) | เรียก lib; GUI เรียก gRPC |
 | **black-vault-gui** | UI desktop | อ่าน `~/.blackvault/grpc_port`, เรียก `BlackVaultService` |
@@ -222,7 +222,7 @@ flowchart TB
 ### 5.5 black-vault (repo เอกสาร)
 
 - `readme.md` — concept, MVP features, architecture, task list เดิม
-- `docs/PRODUCT.md` — เอกสารนี้
+- `docs/01-overview/product.md` — เอกสารนี้
 
 ---
 
@@ -408,13 +408,16 @@ cd black-vault-api && dotnet build BlackVault.slnx
 
 | เอกสาร | ที่อยู่ |
 |--------|--------|
-| Concept & MVP features | [README.md](../README.md) |
-| โครงข้อมูล (ตาราง `repos`) | [DATATABLE.md](DATATABLE.md) |
-| Requirements (build/รันจริง) | [REQUIREMENTS.md](REQUIREMENTS.md) |
-| Lib API & store | [black-vault-lib/README.md](../../black-vault-lib/README.md) |
-| CLI commands | [black-vault-cli/README.md](../../black-vault-cli/README.md) |
-| GUI setup | [black-vault-gui/README.md](../../black-vault-gui/README.md) |
-| License domain | [black-vault-api/README.md](../../black-vault-api/README.md) |
+| Concept & philosophy | [concept.md](concept.md) |
+| MVP features & UX flow | [mvp-features.md](../10-features/mvp-features.md) |
+| โครงสร้างแอป / repo | [architecture.md](../00-app-structure/architecture.md) |
+| สิ่งที่ CLI ทำได้ตอนนี้ | [cli-capabilities.md](../30-reference/cli-capabilities.md) |
+| โครงข้อมูล (ตาราง `repos`) | [datatable.md](../30-reference/datatable.md) |
+| Requirements (build/รันจริง) | [requirements.md](../02-getting-started/requirements.md) |
+| Lib API & store | [black-vault-lib/README.md](../../../black-vault-lib/README.md) |
+| CLI commands | [black-vault-cli/README.md](../../../black-vault-cli/README.md) |
+| GUI setup | [black-vault-gui/README.md](../../../black-vault-gui/README.md) |
+| License domain | [black-vault-api/README.md](../../../black-vault-api/README.md) |
 | Agent conventions | `CLAUDE.md` ในแต่ละ repo |
 
 ---

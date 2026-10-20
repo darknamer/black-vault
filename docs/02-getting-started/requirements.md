@@ -1,8 +1,8 @@
 # 12. Requirements (สิ่งที่ต้องมี)
 
-> ย้ายมาจาก [README §12](../README.md#12-requirements-สิ่งที่ต้องมี) — คงเลขหัวข้อเดิม (12.1–12.6) ไว้เพื่อให้ลิงก์ที่อ้างถึงยังใช้ได้
+> ย้ายมาจาก [README](../../README.md) §12 (เดิม) — คงเลขหัวข้อเดิม (12.1–12.6) ไว้เพื่อให้ลิงก์ที่อ้างถึงยังใช้ได้
 
-ข้อกำหนดสำหรับ **build และรันของจริง** ณ สถานะปัจจุบันของ repo (ไม่ใช่แผน) — spec เชิงข้อกำหนดแบบเต็มอยู่ที่ [black-vault-cli/docs/REQUIREMENTS.md](../../black-vault-cli/docs/REQUIREMENTS.md)
+ข้อกำหนดสำหรับ **build และรันของจริง** ณ สถานะปัจจุบันของ repo (ไม่ใช่แผน) — spec เชิงข้อกำหนดแบบเต็มอยู่ที่ [black-vault-cli/docs/01-overview/requirements.md](../../../black-vault-cli/docs/01-overview/requirements.md)
 
 ---
 
@@ -77,7 +77,7 @@ lib เป็นผู้จัดการไฟล์เหล่านี้�
 └── grpc_cert.pem      # ┘ ลบทิ้งอัตโนมัติตอนปิด serve แบบ graceful
 ```
 
-> โครงสร้างคอลัมน์ของตาราง `repos` ใน `blackvault.db` ดู [DATATABLE.md](DATATABLE.md)
+> โครงสร้างคอลัมน์ของตาราง `repos` ใน `blackvault.db` ดู [DATATABLE.md](../30-reference/datatable.md)
 
 ## 12.5 โหมด develop
 
